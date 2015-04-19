@@ -445,6 +445,20 @@ plot(patternds$interval, patternds$IntervalMean, type="l", col = "blue", main="M
 
 ![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
 
+There is a clear peak in the graph. It is possible to get the exact interval with the maximum average steps:
+
+```r
+patternds[patternds$IntervalMean == max(patternds$IntervalMean), c(1,3)]
+```
+
+```
+## Source: local data frame [1 x 2]
+## 
+##   interval IntervalMean
+## 1      835     206.1698
+```
+
+
 ## </br>
 ## Imputing missing values
 First, calculate the number of NA values in the original data set.
@@ -490,7 +504,7 @@ hist(stepsdsNA$TotalSteps, main="Histogram of Total Steps by day with Corrected 
 	xlab="Total Steps by day", col = "lightblue")
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
 
 The median and median for each day can be visualize as:
 
@@ -877,6 +891,28 @@ kable(stepsdsNA, digits = 2, format="html", longtable = TRUE)
 </tbody>
 </table>
 
+After the corrections the distribution of the means has the same shape in the histograms. 
+However, the Total Number of Steps has a major difference. A good example is comparing
+the sum of the steps for each data set:
+
+```r
+totalStepsWithoutNA <- sum(stepsdsNA$TotalSteps)
+totalStepsWithNA <- sum(stepsds$TotalSteps)
+paste("Sum of steps in original data frame:", totalStepsWithNA, sep=" ")
+```
+
+```
+## [1] "Sum of steps in original data frame: 570608"
+```
+
+```r
+paste("Sum of steps in modified data frame:", totalStepsWithoutNA, sep=" ")
+```
+
+```
+## [1] "Sum of steps in modified data frame: 579736"
+```
+
 ## </br>
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -907,4 +943,4 @@ plot(weekdays$interval, weekdays$MeanSteps, type="l", col = "blue",
 	xlab="Interval", ylab="Mean of steps")
 ```
 
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png) 
