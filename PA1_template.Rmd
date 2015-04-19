@@ -10,19 +10,110 @@ output:
 
 ## </br>
 ## Loading and preprocessing the data
-
+The first step is to load the file with the data source.
+```{r echo=TRUE}
+rawds <- read.csv("activity.csv", head=TRUE, sep=",", col.names = c("steps","date","interval"))
+```
+The second step is to build a new column for the date, using the correct object type. 
+The format was specified in the definition of the problem ("YYYY-MM-DD").
+```{r echo=TRUE}
+library(dplyr)
+rawds <- mutate(rawds, fdate = as.Date(date, "%Y-%m-%d"))
+```
 
 ## </br>
 ## What is mean total number of steps taken per day?
+It is required to calculate the total of steps by day, mean and median. It is important to mention 
+that the NA values will be ignored.
+```{r echo=TRUE}
+dategrp <- group_by(rawds, fdate)
+stepsds <- summarise(dategrp, TotalSteps = sum(steps, na.rm = TRUE), StepsMean = mean(steps, na.rm = TRUE), 
+StepsMedian = median(steps, na.rm = TRUE))
+```
+The total of steps can be represented in a histogram:
+```{r echo=TRUE}
+hist(stepsds$TotalSteps)
+```
 
+The mean and median for the total steps in each day are:
+```{r kable, echo=TRUE}
+kable(stepsds, digits = 2, format="html", longtable = TRUE)
+```
 
 ## </br>
 ## What is the average daily activity pattern?
+In order to display a pattern of the activity it is necessary to pre-calculate another dataset.
+```{r echo=TRUE}
+patterngrp <- group_by(rawds, interval)
+patternds <- summarise(patterngrp, TotalSteps = sum(steps, na.rm = TRUE), 
+IntervalMean = mean(steps, na.rm = TRUE), IntervalMedia = median(steps, na.rm = TRUE))
+```
 
+With the new data set, the pattern of the intervals for the steps can be visualize.
+```{r echo=TRUE}
+plot(patternds$interval, patternds$IntervalMean, type="l")
+```
 
 ## </br>
 ## Imputing missing values
+First, calculate the number of NA values in the original data set.
+```{r echo=TRUE}
+numNA <- length(rawds[is.na(rawds$steps),3])
+numNA
+```
 
+In this section the script will fill the NA values. The selected strategy is to use the median
+for the interval. 
+```{r echo=TRUE}
+simds <- rawds
+stepsNum <- length(rawds$steps)
+for(idx in 1:stepsNum) {
+	if(is.na(simds$steps[idx])) {
+		simds$steps[idx] <- patternds[ patternds$interval == simds$interval[idx] , 4]
+	}
+}
+
+# The previous step will change the data type to list, the next step
+# will convert it back to numeric
+simds$steps <- as.numeric(unlist(simds$steps))
+```
+
+After filling the NA data, the next step is to recreate the pre-calculated data frame:
+```{r echo=TRUE}
+dategrpNA <- group_by(simds, fdate)
+stepsdsNA <- summarise(dategrpNA, TotalSteps = sum(steps), StepsMean = mean(steps), 
+StepsMedian = median(steps))
+```
+
+With the calculated data, it is possible to generate the 
+```{r echo=TRUE}
+hist(stepsdsNA$TotalSteps)
+```
+
+The median and median for each day can be visualize as:
+```{r echo=TRUE}
+kable(stepsdsNA, digits = 2, format="html", longtable = TRUE)
+```
 
 ## </br>
 ## Are there differences in activity patterns between weekdays and weekends?
+
+The first step is to create a new factor variable with two levels: weekend and weekday.
+```{r echo=TRUE} 
+simds$daytype <- ifelse(weekdays(simds$fdate) %in% c("Sunday","Saturday"), "weekend","weekday")
+```
+
+After creating the categorical data, a new data frame must be created to store the averages of steps per interval.
+```{r echo=TRUE}
+patterngrpdaytyp <- group_by(simds, daytype,interval)
+patterndsdaytyp <- summarise(patterngrpdaytyp, TotalSteps = sum(steps, na.rm = TRUE))
+```
+
+With the new categorical variable it is possibly to see the difference between weekdays and weekends:
+```{r echo=TRUE} 
+par(mfrow = c(2,1))
+weekends <- patterndsdaytyp[patterndsdaytyp$daytype == "weekend", ]
+weekdays <- patterndsdaytyp[patterndsdaytyp$daytype == "weekday", ]
+plot(weekends$interval, weekends$TotalSteps, type="l")
+plot(weekdays$interval, weekdays$TotalSteps, type="l")
+```
