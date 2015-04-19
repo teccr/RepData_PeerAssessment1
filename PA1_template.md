@@ -10,7 +10,7 @@ output:
 
 ## </br>
 ## Loading and preprocessing the data
-The first step is to load the file with the data source.
+The first step is to load the file containing the data source.
 
 ```r
 rawds <- read.csv("activity.csv", head=TRUE, sep=",", col.names = c("steps","date","interval"))
@@ -25,7 +25,7 @@ rawds <- mutate(rawds, fdate = as.Date(date, "%Y-%m-%d"))
 
 ## </br>
 ## What is mean total number of steps taken per day?
-It is required to calculate the total of steps by day, mean and median. It is important to mention 
+It is required to calculate the total of steps by day, the mean and median. It is important to mention 
 that the NA values will be ignored.
 
 ```r
@@ -36,7 +36,7 @@ StepsMedian = median(steps, na.rm = TRUE))
 The total of steps can be represented in a histogram:
 
 ```r
-hist(stepsds$TotalSteps)
+hist(stepsds$TotalSteps, main="Histogram of Total Steps by day", xlab="Total Steps by day", col = "lightblue")
 ```
 
 ![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
@@ -433,13 +433,14 @@ In order to display a pattern of the activity it is necessary to pre-calculate a
 ```r
 patterngrp <- group_by(rawds, interval)
 patternds <- summarise(patterngrp, TotalSteps = sum(steps, na.rm = TRUE), 
-IntervalMean = mean(steps, na.rm = TRUE), IntervalMedia = median(steps, na.rm = TRUE))
+	IntervalMean = mean(steps, na.rm = TRUE), IntervalMedia = median(steps, na.rm = TRUE))
 ```
 
 With the new data set, the pattern of the intervals for the steps can be visualize.
 
 ```r
-plot(patternds$interval, patternds$IntervalMean, type="l")
+plot(patternds$interval, patternds$IntervalMean, type="l", col = "blue", main="Mean of steps by Interval", 
+	xlab="Interval", ylab="Mean of steps")
 ```
 
 ![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
@@ -485,7 +486,8 @@ StepsMedian = median(steps))
 With the calculated data, it is possible to generate the 
 
 ```r
-hist(stepsdsNA$TotalSteps)
+hist(stepsdsNA$TotalSteps, main="Histogram of Total Steps by day with Corrected NA values",
+	xlab="Total Steps by day", col = "lightblue")
 ```
 
 ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
@@ -888,7 +890,7 @@ After creating the categorical data, a new data frame must be created to store t
 
 ```r
 patterngrpdaytyp <- group_by(simds, daytype,interval)
-patterndsdaytyp <- summarise(patterngrpdaytyp, TotalSteps = sum(steps, na.rm = TRUE))
+patterndsdaytyp <- summarise(patterngrpdaytyp, MeanSteps = mean(steps))
 ```
 
 With the new categorical variable it is possibly to see the difference between weekdays and weekends:
@@ -897,8 +899,12 @@ With the new categorical variable it is possibly to see the difference between w
 par(mfrow = c(2,1))
 weekends <- patterndsdaytyp[patterndsdaytyp$daytype == "weekend", ]
 weekdays <- patterndsdaytyp[patterndsdaytyp$daytype == "weekday", ]
-plot(weekends$interval, weekends$TotalSteps, type="l")
-plot(weekdays$interval, weekdays$TotalSteps, type="l")
+plot(weekends$interval, weekends$MeanSteps, type="l", col = "blue", 
+	main="Mean of steps by Interval in Weekends", 
+	xlab="Interval", ylab="Mean of steps")
+plot(weekdays$interval, weekdays$MeanSteps, type="l", col = "blue", 
+	main="Mean of steps by Interval in Weekdays", 
+	xlab="Interval", ylab="Mean of steps")
 ```
 
 ![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
